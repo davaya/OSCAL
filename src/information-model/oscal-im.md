@@ -21,18 +21,21 @@ for a given information domain, consisting of many related information elements,
 neutral form. By abstracting information modeling away from data format specific forms,
 the Metaschema Information Modeling Framework provides a means to consistently and sustainably
 maintain an information model, while avoiding the need to maintain each derivative data format individually.
+  -- [Metaschema](https://pages.nist.gov/metaschema/specification/overview/)
 
 Although Metaschema performs abstraction by defining a data format neutral form, it is an
 abstract "information model", not an "abstract information" model, because its building blocks -
 Assemblies, Fields and Flags - are defined in XML and implemented by performing transformations on XML data.
 
-### 1.2 Logical Types
+### 1.2 Abstract Information
 
 > An Information Model defines the essential content of messages used in computing,
 independently of how those messages are represented (i.e., serialized) for communication or storage.
 The core purpose of an IM is to define information equivalence. This allows the essential content
 of data values to be compared for equality regardless of format, and enables hub-and-spoke
 lossless translation across formats.
+-- [Open Suppychain Information Modeling](https://www.oasis-open.org/2024/05/02/introducing-oasis-open-supply-chain-information-modeling/)
+technical committee [charter](https://www.oasis-open.org/2024/04/30/call-for-participation-oasis-osim-tc/)
 
 In an "abstract information" model, types and instances that define the model exist as application
 state independently of any data format, and can be used even if no data formats exist.
@@ -43,7 +46,44 @@ then saving the logical values back out as data.
 
 ![Abstract Information](images/logical-types.png)
 
-#### 1.2.1 Abstract Schema
+#### 1.2.1 Logical Values
+
+Information in JADN is the amount of "news" or "essential content" contained in a message,
+defining what is significant vs. insignificant in lexical values.
+Just as whitespace is often insignificant at the data level, an information model defines
+significance at the logical level: any data not present in a logical value is insignificant.
+It is ignored or rejected (**) when converting lexical to logical values, and isn't included
+when converting logical to lexical because it doesn't exist.
+
+Information theory uses the word "entropy" to refer to the quantity of information carried
+in a message. The more restrictions that are placed on a value, the less data is required to
+carry its information regardless of how much data is actually used.
+Strings with no restrictions are least efficient; strings with restricted length, character set,
+or patterns are more efficient, and enumerations such as field names, enumerated map keys,
+and vocabularies are by far the most efficient.
+The string "mitigation" is always the same ten characters at the data level, but
+when it represents one of only five possible observation types
+("ssp-statement-issue", "control-objective", "mitigation", "finding", "historic") it carries
+less than 3 bits of information in 80 bits of lexical data.
+The other 77 bits are not essential content and are not included in the logical value.
+If an information model allows generic strings (for example, "Purina-cat-chow" or
+"Four score and seven years ago our fathers brought forth on this continent a new nation,
+from the 🏔️ to the 🌾 to the 🏖️.") where restricted or enumerated values are appropriate,
+it requires both users and applications to deal with inappropriate content and presents a
+larger attack surface to adversaries.
+
+Designing information models to correctly distinguish between essential content and
+insignificant data is not just theoretical trivia, it's an operational and security benefit.
+Allowing a tokenized Gettysburg address as a telephone number type is an anti-pattern that
+can be tested for in the release pipeline.
+
+** Postel's robustness principle, "*be conservative in what you send and liberal in what you accept*"
+affects lexical to logical conversion. If no conversion exists the lexical data is invalid.
+The robustness principle is now in some disrepute, and since following it requires opting
+in by converting multiple lexical values to a single logical value, information models are
+by default conservative in what they accept.
+
+#### 1.2.2 Logical Types
 
 JADN defines a small set of abstract types that represent behavior commonly supported in programming languages
 and commonly understood by programmers:
@@ -81,22 +121,20 @@ now or in the future.
 An abstract schema is a set of datatypes in a package, plus package metadata. The type definitions
 include options that specify both how information instances are validated and how they are serialized.
 
-#### 1.2.2 IM Serialization
+#### 1.2.3 IM Serialization
 
-Any method of loading and saving program state, such as Python's pickle, ECMAScript's JSON or Java's JAXB,
-does so by marshalling or serializing program state into a data format. Because an abstract schema is
-a logical value, it can be serialized using any language-specific or language-agnostic data format
-supported by the operating environment.
+Any method of loading and saving program state, including APIs (class getter/setter methods)
+and marshalling formats (Python's pickle, ECMAScript's JSON or Java's JAXB) is applicable
+to loading and saving abstract schemas. In addition, because JADN has a well-defined IM structure,
+schemas can be loaded and saved using a domain-specific language (DSL).
 
-And because logical values are program state, an abstract schema can also be loaded and saved using a
-schema's domain-specific language (DSL). 
 JADN Information Definition Language (IDL) is a non-normative and non-exclusive DSL used to load
-and store JADN schemas without using JSON, XML, or other generic data format.
+and store JADN schemas without using JSON, XML, or any other generic data format.
 Other hypothetical DSLs, such as one that mimics the syntax of ASN.1 or the terse grammar of
 [CDDL](https://datatracker.ietf.org/doc/html/rfc8610),
-could represent the identical schemas. The minimalist structure of JADN combine with the ability
-to optimize one or more DSLs to make JADN an effective tool for understanding and defining
-information models.
+could represent the identical schemas. The minimalist structure of JADN combined with the ability
+to tailor one or more DSLs for specific purposes make it an effective tool for understanding
+and defining information models.
 
 ### 1.3 Data Modeling and Ontologies
 
@@ -108,7 +146,7 @@ that represent information at a higher layer of abstraction than physical data.
 
 Ontologies express the semantics of and relationships among resources. Physical resources
 are described by ontology nodes, while digital resources (documents, messages, images, etc.)
-can be both described by ontologies and defined by abstract information models composed of
+can be both described by ontology nodes and defined by abstract information models composed of
 [Datatypes](https://www.w3.org/TR/rdf12-concepts/#section-Datatypes). Datatypes
 define the logical value of a digital resource and its serialized representations, and
 the ontology terminology of datatypes performing lexical-to-(logical)-value (L2V) mapping is a
@@ -164,15 +202,15 @@ types and one that does not.
 Metaschema treats flags as being pre-defined primitive types. JADN has only five primitive types; all subtypes
 of those five must be defined in a schema like all other types. A "common types" schema can be defined as
 a library for other schemas to use, but it still must be created and referenced like all other schemas,
-only the 12 types listed above are built into the definition of JADN.
+as only the 12 types listed [above](#122-abstract-schema) are built into the framework.
 
 ### 2.3 Packages and Bundles
 Metaschema defines "combined" schemas and "unified model of models".
 
 JADN schemas are organized using packages. There is no combination of packages other than being bundled together.
-* **Package** has two fields:
+* a **Package** has two fields:
   * "info": context header (package namespace, referenced namespaces, root types, name, constraints, ...)
-  * "types": types defined within the package
+  * "types": datatypes defined within the package
 * type definitions can reference types from other packages by their namespace
 * blank namespace prefixes allow packages to be merged into a single package if type names are unique and contexts are compatible
 
@@ -208,23 +246,23 @@ After understanding the differences in approach and demonstrating JADN's ability
 the question remains: what advantages does it have in this application?  
 A minimal set of logical types is easier to describe, understand, and edit.
 Logical types are essential content -> bare HTML, encoding rules add implementation detail -> css
---->
 
 Example: Assessment plan unique constraint on component and user (uses key).  Logical: is_unique, has_key. Lexical: serialized as map or list.
+--->
 
 ## 4 Summary
-| Feature                                          | JADN                                            | Metaschema                              |
-|--------------------------------------------------|-------------------------------------------------|-----------------------------------------|
-| [Model instance](#12-logical-types)              | Logical value: state in an application          | Data value: XML                         | 
-| [Data translation](#12-logical-types)            | Hub/spoke (data->logical->data): N translations | Star (data->data): N^2 translations     |
-| [Datatypes](#121-abstract-schema)                | Every type is a datatype                        | Only primitives (flags) are Datatypes   |
-| [Model definition](#122-im-serialization)        | IDL or serialized as data in any format         | XML data                                |
-| [Data formats](#13-data-modeling-and-ontologies) | Character sequence (text) or byte sequence      | Character sequence only                 |
-| [Fields/Properties](#22-fields)                  | Assembly binds local id/name to type            | Field names are bound globally to types |
-| [Packaging](#23-packages-and-bundles)            | Models can be grouped in non-semantic bundles   | Types from multiple models can be mixed |
-| [Field order](#3-modeling-oscal-in-jadn)         | Assemblies are ordered or unordered sets        | Assemblies are only unordered sets      |
-| Information                                      | Logical model defines significant content       | Insignificant content is undefined      |
-| Type names                                       | Every type has a name                           | Anonymous (nested) types are allowed    |
-| Type references                                  | Single id format: ns:Type.field                 | Multiple id formats                     |
-| Field names                                      | Enumerated (numeric id and text name/label)     | Text name only                          |
-| Documentation                                    | Short line comments, docs in header or external | Type definitions include documentation  |
+| Feature                                          | JADN                                            | Metaschema                                     |
+|--------------------------------------------------|-------------------------------------------------|------------------------------------------------|
+| [Model instance](#12-abstract-information)       | Logical value: state in an application          | Data value: XML                                | 
+| [Data translation](#12-abstract-information)     | Hub/spoke (data->logical->data): N translations | Star (data->data): N^2 translations            |
+| [Information](#121-logical-values)               | Logical model defines significant content       | Significant/insignificant boundary unspecified |
+| [Datatypes](#122-logical-types)                  | Every type is a datatype                        | Only primitives (flags) are Datatypes          |
+| [Model definition](#123-im-serialization)        | IDL or serialized as data in any format         | XML data                                       |
+| [Data formats](#13-data-modeling-and-ontologies) | Character sequence (text) or byte sequence      | Character sequence only                        |
+| [Fields/Properties](#22-fields)                  | Assembly binds local id/name to type            | Field names are bound globally to types        |
+| [Packaging](#23-packages-and-bundles)            | Models can be grouped in non-semantic bundles   | Types from multiple models can be mixed        |
+| [Field order](#3-modeling-oscal-in-jadn)         | Assemblies are ordered or unordered sets        | Assemblies are only unordered sets             |
+| Type names                                       | Every type has a name                           | Anonymous (nested) types are allowed           |
+| Type references                                  | Single id format: ns:Type.field                 | Multiple id formats                            |
+| Field names                                      | Enumerated (numeric id and text name/label)     | Text name only                                 |
+| Documentation                                    | Short line comments, docs in header or external | Type definitions include documentation         |

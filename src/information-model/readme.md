@@ -2,7 +2,7 @@
 
 > An OSCAL Metaschema defines the information structures that define an OSCAL model in a format-neutral form.
 Documentation about the meaning (semantics) and use of a given metaschema structure is provided on the
-Metaschema [website].
+Metaschema [website]. -- [Metaschema readme](../metaschema/readme.md)
 
 An OSCAL Abstract Information Model is an alternate method of specifying the information structures that define an
 OSCAL model in a format-neutral form.
@@ -28,7 +28,7 @@ The information models discussed here are **logical data models**, or abstract s
 be as familiar and compatible as possible with data modeling practice. The XML and JSON schemas derived from the
 Metaschema modules or information models are **physical data models**, or concrete schemas.
 
-The proof-of-concept goals are to:
+The proof-of-concept software goals are to:
 * validate JSON and XML OSCAL data directly against the IM
 * generate JSON and XML OSCAL schemas that can also validate that data with results identical to the
 Metaschema-generated schemas
