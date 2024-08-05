@@ -182,22 +182,14 @@ Defining CPE using Metaschema would illustrate the significance of logical value
 
 In addition to the abstraction approach, there are some specific differences between Metaschema and JADN
 
-### 2.1 Datatypes
+### 2.1 Flag Names
 
 Metaschema treats datatype as a synonym for primitive. Every JADN type is a datatype, thus UUIDDatatype,
 EmailAddressDatatype and the like are redundantly named; UUID and EmailAddress would be sufficient.
+The Metaschema source says `<define-flag name="uuid" required="yes" as-type="uuid">`, but the conversion
+scripts for both XML and JSON add the *Datatype decoration.
 
-### 2.2 Fields
-
-Metaschema treats fields as having an independent existence akin to assemblies. JADN has no such thing as
-a field type. Its compound types are composed of other types, and fields within a compound type have:
-1. a name/id with local scope, and
-2. any type
-
-There is no difference between a primitive, compound or union type that appears as a field in one or more
-types and one that does not.
-
-### 2.3 Flags
+### 2.2 Flag Definitions
 
 Metaschema treats flags as being pre-defined primitive types. JADN has only five primitive types; all subtypes
 of those five must be defined in a schema like all other types. A "common types" schema can be defined as
@@ -219,9 +211,9 @@ JADN schemas are organized using packages. There is no combination of packages o
   * a bundle has no logical value: no id, no nesting, no association among packages, no persistent grouping after being unpacked
   * a bundle can be implemented by an archiver such as zip or tar, or by concatenating package content as in JSON streaming
 
-### 2.4
+### 2.4 Types / Representations
 
-Character and byte sequences, hex and base64 strings
+Character and byte sequences, hex and base64 strings, UUID
 
 ## 3 Modeling OSCAL in JADN
 
@@ -248,21 +240,35 @@ A minimal set of logical types is easier to describe, understand, and edit.
 Logical types are essential content -> bare HTML, encoding rules add implementation detail -> css
 
 Example: Assessment plan unique constraint on component and user (uses key).  Logical: is_unique, has_key. Lexical: serialized as map or list.
+
+#### 3.x Lossless Conversion
+As described in [Logical Values]($121-logical-values) blah blah lossless
+Metaschema:
+```
+  <define-field name="description" as-type="markup-multiline" ...
+```
+JSON Schema:
+```
+    "description": {"type": "string"}
+```
+
 --->
 
 ## 4 Summary
-| Feature                                          | JADN                                            | Metaschema                                     |
-|--------------------------------------------------|-------------------------------------------------|------------------------------------------------|
-| [Model instance](#12-abstract-information)       | Logical value: state in an application          | Data value: XML                                | 
-| [Data translation](#12-abstract-information)     | Hub/spoke (data->logical->data): N translations | Star (data->data): N^2 translations            |
-| [Information](#121-logical-values)               | Logical model defines significant content       | Significant/insignificant boundary unspecified |
-| [Datatypes](#122-logical-types)                  | Every type is a datatype                        | Only primitives (flags) are Datatypes          |
-| [Model definition](#123-im-serialization)        | IDL or serialized as data in any format         | XML data                                       |
-| [Data formats](#13-data-modeling-and-ontologies) | Character sequence (text) or byte sequence      | Character sequence only                        |
-| [Fields/Properties](#22-fields)                  | Assembly binds local id/name to type            | Field names are bound globally to types        |
-| [Packaging](#23-packages-and-bundles)            | Models can be grouped in non-semantic bundles   | Types from multiple models can be mixed        |
-| [Field order](#3-modeling-oscal-in-jadn)         | Assemblies are ordered or unordered sets        | Assemblies are only unordered sets             |
-| Type names                                       | Every type has a name                           | Anonymous (nested) types are allowed           |
-| Type references                                  | Single id format: ns:Type.field                 | Multiple id formats                            |
-| Field names                                      | Enumerated (numeric id and text name/label)     | Text name only                                 |
-| Documentation                                    | Short line comments, docs in header or external | Type definitions include documentation         |
+| Feature                                           | JADN                                            | Metaschema                                     |
+|---------------------------------------------------|-------------------------------------------------|------------------------------------------------|
+| [Model instance](#12-abstract-information)        | Logical value: state in an application          | Data value: XML                                | 
+| [Data translation](#12-abstract-information)      | Hub/spoke (data->logical->data): N translations | Star (data->data): N^2 translations            |
+| [Information](#121-logical-values)                | Logical model defines significant content       | Significant/insignificant boundary unspecified |
+| [Datatypes](#122-logical-types)                   | Every type is a datatype                        | Only primitives (flags) are Datatypes          |
+| [Model definition](#123-im-serialization)         | IDL or serialized as data in any format         | XML data                                       |
+| [Data formats](#13-data-modeling-and-ontologies)  | Character sequence (text) or byte sequence      | Character sequence only                        |
+| [Flag names](#21-flag-names)                      | Simple names (e.g., UUID)                       | Names have appended "Datatype" (UUIDDatatype)  |
+| [Flag definitions](#22-flag-definitions)          | Types are explicitly defined in a schema        | Types are treated as built-in                  |
+| [Packaging](#23-packages-and-bundles)             | Models can be grouped in non-semantic bundles   | Types from multiple models can be mixed        |
+| [Type/Representation](#24-types--representations) | Types based on logical meaning                  | Types based on text representation             |
+| [Field order](#3-modeling-oscal-in-jadn)          | Assemblies are ordered or unordered sets        | Assemblies are only unordered sets             |
+| Type names                                        | Every type has a name                           | Anonymous (nested) types are allowed           |
+| Type references                                   | Single id format: ns:Type.field                 | Multiple id formats                            |
+| Field names                                       | Enumerated (numeric id and text name/label)     | Text name only                                 |
+| Documentation                                     | Short line comments, docs in header or external | Type definitions include documentation         |
