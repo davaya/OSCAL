@@ -110,13 +110,9 @@ This is because the schema is composed of datatypes:
 and "All instances of a DataType with the same value are considered to be equal instances."
     -- [UML](https://www.omg.org/spec/UML/2.5/PDF/) section 10.2.
 
-A different constant is by definition a different instance, whereas two variables might be
-mistakenly considered the same instance even if values within them were different.
-This could occur due to references being treated as equivalent to data being referenced,
-or even if external references to a collection are treated as adding members to it.
-A document is useful only if it is defined to be an immutable lexical value that could
-in principle be hashed or signed, unaffected by anything that exists outside that value
-now or in the future.
+Because all instances of a datatype are equivalent, schemas can define equivalence between a short
+index value and a large data value, allowing applications to de-duplicate multiple occurrences of
+the same data in messages in order to compress the data, make it easier to read, or both.
 
 An abstract schema is a set of datatypes in a package, plus package metadata. The type definitions
 include options that specify both how information instances are validated and how they are serialized.
@@ -207,7 +203,7 @@ JADN schemas are organized using packages. There is no combination of packages o
 * blank namespace prefixes allow packages to be merged into a single package if type names are unique and contexts are compatible
 
 
-* **Bundle** is a set of packages packed together for transmission or storage
+* a **Bundle** is a set of packages packed together for transmission or storage
   * a bundle has no logical value: no id, no nesting, no association among packages, no persistent grouping after being unpacked
   * a bundle can be implemented by an archiver such as zip or tar, or by concatenating package content as in JSON streaming
 
@@ -232,6 +228,13 @@ specification, which does not require content to appear in any particular order.
 at the front of an OSCAL document, or Metadata after the Body, because the current Metaschema does not
 impose a serialization order. A JADN IM can define field ordering if that is the designer's intent,
 but implementing it in JSON Schema would require a change to the serialization format.
+
+...
+
+Example OSCAL model diagram (PlantUML):
+![Assessment Report Diagram](images/ar-plantuml.png)
+
+...
 
 <!---
 After understanding the differences in approach and demonstrating JADN's ability to validate existing OSCAL data,
